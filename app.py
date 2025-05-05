@@ -1,10 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
 from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*")  # Allow all origins (for testing)
+socketio = SocketIO(app, cors_allowed_origins="*")  # Allow all CORS (for testing)
 
-# Track connected peers (in production, use a database)
+# Track connected peers
 peers = {}
 
 @app.route("/")
@@ -13,7 +13,7 @@ def home():
 
 @socketio.on("connect")
 def handle_connect():
-    peer_id = request.sid  # Unique connection ID
+    peer_id = request.sid
     peers[peer_id] = peer_id
     print(f"Peer connected: {peer_id}")
     emit("connected", {"peer_id": peer_id})
@@ -31,5 +31,6 @@ def handle_disconnect():
         del peers[peer_id]
     print(f"Peer disconnected: {peer_id}")
 
+# Production-ready server (comment out for local testing)
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=5000)
+    socketio.run(app, host="0.0.0.0", port=5000, allow_unsafe_werkzeug=True)
