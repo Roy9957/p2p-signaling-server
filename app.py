@@ -2,7 +2,7 @@ from flask import Flask, request
 from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*")  # Allow all CORS (for testing)
+socketio = SocketIO(app, cors_allowed_origins="https://roy9957.github.io/voice/")  # Allow all CORS (for testing)
 
 # Track connected peers
 peers = {}
