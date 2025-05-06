@@ -2,7 +2,7 @@ from flask import Flask, request
 from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="https://roy9957.github.io/voice/")  # Allow all CORS (for testing)
+socketio = SocketIO(app, cors_allowed_origins="*")  # Allow all CORS (for testing)
 
 # Track connected peers
 peers = {}
@@ -20,9 +20,15 @@ def handle_connect():
 
 @socketio.on("signal")
 def handle_signal(data):
-    target_peer = data["target_peer"]
-    if target_peer in peers:
-        emit("signal", data, to=target_peer)  # Relay signals between peers
+    sender_id = request.sid
+    target_peer = data.get("target_peer")
+
+    if target_peer == "broadcast":
+        for pid in peers:
+            if pid != sender_id:
+                emit("signal", data, to=pid)
+    elif target_peer in peers:
+        emit("signal", data, to=target_peer)
 
 @socketio.on("disconnect")
 def handle_disconnect():
@@ -31,6 +37,6 @@ def handle_disconnect():
         del peers[peer_id]
     print(f"Peer disconnected: {peer_id}")
 
-# Production-ready server (comment out for local testing)
+# Production-ready server
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000, allow_unsafe_werkzeug=True)
